@@ -23,8 +23,8 @@ contract Vault {
     event Sent(address addr, uint256 value);
     event Withdrawed(uint256 value);
 
-    Owner owner;
-    uint256 currentAmount = 0;
+    Owner public owner;
+    uint256 public currentAmount = 0;
     mapping(address => Reciever) public recievers;
     address[] whitelist;
     mapping(address => Payment) public paymentDetails;
