@@ -26,7 +26,7 @@ contract Vault {
     Owner public owner;
     uint256 public currentAmount = 0;
     mapping(address => Reciever) public recievers;
-    address[] whitelist;
+    address[] public whitelist;
     mapping(address => Payment) public paymentDetails;
 
     modifier onlyOwner() {
@@ -64,7 +64,7 @@ contract Vault {
         owner.hasSigned = true;
     }
 
-    function isContractSigned() internal view returns (bool) {
+    function isContractSigned() public view returns (bool) {
         if(!owner.hasSigned) {
             return false;
         }
@@ -84,7 +84,7 @@ contract Vault {
     }
 
     function withdraw() public payable onlyOwner {
-        require(isContractSigned(), "Contract is not signed");
+        require(!isContractSigned(), "Contract is already signed");
         uint256 balanceAmount = address(this).balance;
         payable(address(owner.addr)).transfer(balanceAmount);
         emit Withdrawed(balanceAmount);
@@ -105,6 +105,7 @@ contract Vault {
         require(isContractSigned(), "Contract is not signed");
         uint256 amountToBeSent = paymentDetails[_reciever].amount;
         require(amountToBeSent <= address(this).balance, "Not enough funds to execute the transaction");
+        require(paymentDetails[_reciever].numberOfTransactions > 0, "No transactions left");
         payable(address(_reciever)).transfer(amountToBeSent);
         paymentDetails[_reciever].numberOfTransactions--;
         emit Sent(address(_reciever), amountToBeSent);
@@ -120,10 +121,7 @@ contract Vault {
         require(paymentAmount <= address(this).balance, "Not enough funds to execute the transaction");
         for(uint256 i = 0; i < length; i++) {
             if(paymentDetails[whitelist[i]].numberOfTransactions > 0) {
-                uint256 amountToBeSent = paymentDetails[whitelist[i]].amount;
-                payable(address(whitelist[i])).transfer(amountToBeSent);
-                paymentDetails[whitelist[i]].numberOfTransactions--;  
-                emit Sent(address(whitelist[i]), amountToBeSent);
+                createPaymentTo(whitelist[i]);
             }
         }
     }
