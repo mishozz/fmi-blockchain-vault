@@ -8,6 +8,7 @@ import Deposit from  './Components/Deposit'
 import Withdraw from  './Components/Withdraw'
 import Vault from './abis/Vault.json'
 import Whitelist from './Components/Whitelist';
+import PaymentDetails from './Components/PaymentDetails'
 
 class App extends Component {
   constructor(props) {
@@ -89,6 +90,7 @@ class App extends Component {
             <Route exact path="/deposit" element={<Deposit vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
             <Route exact path="/withdraw" element={<Withdraw vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
             <Route exact path="/whitelist" element={<Whitelist updateWhitelist={this.updateWhitelist} whitelist={this.state.whitelist} vault={this.state.vault} account={this.state.account}/>}/>
+            <Route exact path="/details" element={<PaymentDetails whitelist={this.state.whitelist} vaultAddress={this.state.vaultAddress} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
           </Routes>
       </Router>
       </div>
