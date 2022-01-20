@@ -46,8 +46,7 @@ class App extends Component {
       this.setState({vaultAddress: vaultData.address})
 
       const whitelistLength = await vault.methods.whiteListLength.call().call()
-      console.log(whitelistLength)
-
+      this.loadWhitelist(vault, whitelistLength)
     } else {
       window.alert('Vault contract not deployed to detected network.')
     }
