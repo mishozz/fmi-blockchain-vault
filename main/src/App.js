@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import MyNavBar from  './Components/Navbar'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Deposit from  './Components/Deposit'
+import Withdraw from  './Components/Withdraw'
 import Vault from './abis/Vault.json'
 
 class App extends Component {
@@ -14,7 +15,8 @@ class App extends Component {
       account: '',
       balance: '0',
       vault: {},
-      vaultBalance: '0'
+      vaultBalance: '0',
+      vaultAddress: ''
     }
   }
 
@@ -38,6 +40,7 @@ class App extends Component {
       this.setState({ vault })
       let vaultBalance = await web3.eth.getBalance(vaultData.address)
       this.setState({vaultBalance})
+      this.setState({vaultAddress: vaultData.address})
     } else {
       window.alert('Vault contract not deployed to detected network.')
     }
@@ -50,6 +53,13 @@ class App extends Component {
     }
   }
 
+  updateBalances = (ethBalance, vaultBalance) => {
+    this.setState({
+      balance: ethBalance,
+      vaultBalance: vaultBalance
+    })
+  }
+
   render() {
     return (
       <div >
@@ -57,7 +67,8 @@ class App extends Component {
         <Router>
           <Routes>
             <Route exact path="/" />
-            <Route exact path="/deposit" element={<Deposit  balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
+            <Route exact path="/deposit" element={<Deposit vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
+            <Route exact path="/withdraw" element={<Withdraw vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
           </Routes>
       </Router>
       </div>

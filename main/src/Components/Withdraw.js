@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {InputGroup, Button, FormControl} from 'react-bootstrap'
 
 
-class Deposit extends Component {
+class Withdraw extends Component {
 
     constructor(props) {
         super(props)
@@ -26,12 +26,12 @@ class Deposit extends Component {
         return "Vault Balance is " + window.web3.utils.fromWei(this.props.vaultBalance, 'Ether') + " ETH"
     }
 
-    deposit = (etherAmount) => {
+    withdraw = async () => {
         const web3 = window.web3
         this.setState({ loading: true })
-        this.props.vault.methods.deposit()
-            .send({from: this.props.account, value: etherAmount})
-            .on('transactionHash', async () => {
+        this.props.vault.methods.withdraw()
+            .send({from: this.props.account})
+            .on('transactionHash', async (hash) => {
                 await new Promise(r => setTimeout(r, 200));
                 this.setState({ loading: false })
                 let ethBalance = await web3.eth.getBalance(this.props.account)
@@ -46,21 +46,15 @@ class Deposit extends Component {
         content = <p id="loader" className="text-center">Loading...</p>
         } else {
         content = <div>
-            <h1>Deposit</h1>
+            <h1>Withdraw</h1>
             <h2 id="balance-h2">{this.getBalance()}</h2>
             <h2 id="vaultBalance-h2">{this.getVaultBalance()}</h2>
             <form onSubmit={(event) => {
                 event.preventDefault();
-                let etherAmount = this.input.value.toString()
-                etherAmount = window.web3.utils.toWei(etherAmount, 'Ether')
-                this.deposit(etherAmount)
+                this.withdraw()
             }}>
                 <InputGroup className="mb-3" >
-                    <Button variant="outline-secondary" type="submit">Deposit</Button>
-                    <FormControl 
-                        ref={(input) => this.input = input} 
-                        aria-describedby="basic-addon1"
-                    />
+                    <Button variant="outline-secondary" type="submit">Withdraw</Button>
                 </InputGroup>
             </form>
         </div>
@@ -72,4 +66,4 @@ class Deposit extends Component {
     );
   }
 }
-export default Deposit;
+export default Withdraw;
