@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Deposit from  './Components/Deposit'
 import Withdraw from  './Components/Withdraw'
 import Vault from './abis/Vault.json'
+import Whitelist from './Components/Whitelist';
 
 class App extends Component {
   constructor(props) {
@@ -16,7 +17,8 @@ class App extends Component {
       balance: '0',
       vault: {},
       vaultBalance: '0',
-      vaultAddress: ''
+      vaultAddress: '',
+      whitelist: []
     }
   }
 
@@ -35,15 +37,29 @@ class App extends Component {
     // load vault contract
     const networkId =  await web3.eth.net.getId()
     const vaultData = Vault.networks[networkId]
+    // load contract data
     if(vaultData) {
       const vault = new web3.eth.Contract(Vault.abi, vaultData.address)
-      this.setState({ vault })
-      let vaultBalance = await web3.eth.getBalance(vaultData.address)
+      this.setState({vault})
+      const vaultBalance = await web3.eth.getBalance(vaultData.address)
       this.setState({vaultBalance})
       this.setState({vaultAddress: vaultData.address})
+
+      const whitelistLength = await vault.methods.whiteListLength.call().call()
+      console.log(whitelistLength)
+
     } else {
       window.alert('Vault contract not deployed to detected network.')
     }
+  }
+
+  async loadWhitelist(vault, length) {
+    let whitelist = [];
+    for(let i = 0; i < length; i++) {
+      const address = await vault.methods.whitelist(i).call()
+      whitelist.push(address)
+    }
+    this.setState({whitelist})
   }
 
   async loadWeb3() {
@@ -60,6 +76,10 @@ class App extends Component {
     })
   }
 
+  updateWhitelist = (whitelist) => {
+    this.setState({whitelist})
+  }
+
   render() {
     return (
       <div >
@@ -69,6 +89,7 @@ class App extends Component {
             <Route exact path="/" />
             <Route exact path="/deposit" element={<Deposit vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
             <Route exact path="/withdraw" element={<Withdraw vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
+            <Route exact path="/whitelist" element={<Whitelist updateWhitelist={this.updateWhitelist} whitelist={this.state.whitelist} vault={this.state.vault} account={this.state.account}/>}/>
           </Routes>
       </Router>
       </div>

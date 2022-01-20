@@ -13,6 +13,7 @@ class MyNavBar extends Component {
             <Nav className="me-auto">
               <Nav.Link href="deposit">Lock funds</Nav.Link>
               <Nav.Link href="withdraw">Withdraw</Nav.Link>
+              <Nav.Link href="whitelist">Whitelist</Nav.Link>
               <Nav.Link href="createPayment">Create Payment</Nav.Link>
             </Nav>
           </Container>

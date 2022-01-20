@@ -27,6 +27,7 @@ contract Vault {
     uint256 public currentAmount = 0;
     mapping(address => Reciever) public recievers;
     address[] public whitelist;
+    uint256 public whiteListLength = 0;
     mapping(address => Payment) public paymentDetails;
 
     modifier onlyOwner() {
@@ -44,8 +45,8 @@ contract Vault {
     }
 
     function setWhitelistAddresses(address[] memory _whitelist) public onlyOwner {
-       uint length = _whitelist.length;
-       for(uint i = 0; i < length; i++) {
+       whiteListLength = _whitelist.length;
+       for(uint i = 0; i < whiteListLength; i++) {
            recievers[_whitelist[i]].isWhiteListed = true;
        }
        whitelist = _whitelist;
