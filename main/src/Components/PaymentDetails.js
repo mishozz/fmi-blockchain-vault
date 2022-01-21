@@ -34,10 +34,8 @@ class PaymentDetails extends Component {
             .on('transactionHash', async () => {
                 await new Promise(r => setTimeout(r, 200));
                 this.setState({ loading: false })
-                let ethBalance = await web3.eth.getBalance(this.props.account)
-                let vaultBalance = await web3.eth.getBalance(this.props.vaultAddress)
-                this.props.updateBalances(ethBalance, vaultBalance)
         })
+        this.setState({ loading: false })
       }
 
     render() {
@@ -51,7 +49,6 @@ class PaymentDetails extends Component {
         } else {
         content = <div>
             <h1>Set Payment Details</h1>
-            <h2 id="balance-h2">{this.getBalance()}</h2>
             <h2 id="vaultBalance-h2">{this.getVaultBalance()}</h2>
             <form onSubmit={(event) => {
                 event.preventDefault();
@@ -60,13 +57,10 @@ class PaymentDetails extends Component {
                 let amount = this.amount.value.toString()
                 amount = window.web3.utils.toWei(amount, 'Ether')
                 let reciever = this.reciever.value.toString()
-                console.log(reciever)
-                console.log(amount)
-                console.log(numberOfTransactions)
-                // this.setPayment(reciever, amount, numberOfTransactions)
+                this.setPayment(reciever, amount, numberOfTransactions)
             }}>
                 <InputGroup className="mb-3" >
-                    <Button variant="outline-secondary" type="submit">Deposit</Button>
+                    <Button variant="outline-secondary" type="submit">Set</Button>
                     <Form.Select 
                         ref={(input) => this.reciever = input}
                         size="lg">
@@ -75,7 +69,7 @@ class PaymentDetails extends Component {
                     <FormControl 
                         ref={(input) => this.amount = input} 
                         aria-describedby="basic-addon1"
-                        placeholder="amount"
+                        placeholder="amount per transaction"
                     />
                     <FormControl 
                         ref={(input) => this.numberOfTransactions = input} 
