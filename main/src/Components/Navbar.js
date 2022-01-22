@@ -14,8 +14,9 @@ class MyNavBar extends Component {
               <Nav.Link href="deposit">Lock funds</Nav.Link>
               <Nav.Link href="withdraw">Withdraw</Nav.Link>
               <Nav.Link href="whitelist">Whitelist</Nav.Link>
+              <Nav.Link href="approve">Approve Contract</Nav.Link>
               <Nav.Link href="details">Payment Details</Nav.Link>
-              <Nav.Link href="createPayment">Create Payment</Nav.Link>
+              <Nav.Link href="payment">Create Payment</Nav.Link>
             </Nav>
           </Container>
         </Navbar>
