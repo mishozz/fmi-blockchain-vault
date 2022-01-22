@@ -8,15 +8,16 @@ class Approve extends Component {
     constructor(props) {
         super(props)
         this.state = {
-          loading: true
+          loading: true,
+          contractSigned: false
         }
     }
 
     async componentDidMount() {
         await new Promise(r => setTimeout(r, 200));
         this.setState({loading: false})
+        await this.isContractSigned()
     }
-
 
     recieverApprove = () => {
         const web3 = window.web3
@@ -24,7 +25,8 @@ class Approve extends Component {
         this.props.vault.methods.recieverApprove()
             .send({from: this.props.account})
             .on('transactionHash', async () => {
-                await new Promise(r => setTimeout(r, 200));
+                await this.isContractSigned()
+                await new Promise(r => setTimeout(r, 200))
                 this.setState({ loading: false })
         })
         this.setState({ loading: false })
@@ -36,10 +38,17 @@ class Approve extends Component {
         this.props.vault.methods.ownerApprove()
             .send({from: this.props.account})
             .on('transactionHash', async () => {
-                await new Promise(r => setTimeout(r, 200));
+                await this.isContractSigned()
+                await new Promise(r => setTimeout(r, 200))
                 this.setState({ loading: false })
         })
         this.setState({ loading: false })
+    }
+
+    isContractSigned = async () => {
+        const web3 = window.web3
+        const isContractSigned = await this.props.vault.methods.contractSigned.call().call()
+        this.setState({contractSigned: isContractSigned})
     }
 
     render() {
@@ -48,7 +57,8 @@ class Approve extends Component {
         content = <p id="loader" className="text-center">Loading...</p>
         } else {
         content = <div>
-            <h1>Contract signing</h1>
+            <h1>Contract signed: {this.state.contractSigned.toString()} </h1>
+            <br></br>
             <h2>Reciever approve</h2>
             <Button variant="outline-secondary" onClick={this.recieverApprove}>Approve</Button>
             <h2>Owner approve</h2>
