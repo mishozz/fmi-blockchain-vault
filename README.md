@@ -1,8 +1,8 @@
 # FMI Vault contract
 
-## How to run on local blockchain
+## Local developement
 
-**Software Requirments**
+**Requirments**
 
 **npm** (Node package manager) must be installed
 
@@ -42,7 +42,7 @@
 
 `npm start`
 
-## How to run contract's tests
+## Run Tests
 
 `truffle test`
 
