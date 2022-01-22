@@ -29,6 +29,7 @@ contract Vault {
     address[] public whitelist;
     uint256 public whiteListLength = 0;
     mapping(address => Payment) public paymentDetails;
+    bool public contractSigned = false;
 
     modifier onlyOwner() {
         require(msg.sender == owner.addr);
@@ -59,10 +60,12 @@ contract Vault {
 
     function recieverApprove() public onlyReciever {
         recievers[msg.sender].hasSigned = true;
+        contractSigned = isContractSigned();
     }
 
     function ownerApprove() public onlyOwner {
         owner.hasSigned = true;
+        contractSigned = isContractSigned();
     }
 
     function isContractSigned() public view returns (bool) {
@@ -85,7 +88,7 @@ contract Vault {
     }
 
     function withdraw() public payable onlyOwner {
-        require(!isContractSigned(), "Contract is already signed");
+        require(!contractSigned, "Contract is already signed");
         uint256 balanceAmount = address(this).balance;
         payable(address(owner.addr)).transfer(balanceAmount);
         emit Withdrawed(balanceAmount);
@@ -103,7 +106,7 @@ contract Vault {
     }
 
     function createPaymentTo(address _reciever) public payable {
-        require(isContractSigned(), "Contract is not signed");
+        require(contractSigned, "Contract is not signed");
         uint256 amountToBeSent = paymentDetails[_reciever].amount;
         require(amountToBeSent <= address(this).balance, "Not enough funds to execute the transaction");
         require(paymentDetails[_reciever].numberOfTransactions > 0, "No transactions left");
@@ -113,7 +116,7 @@ contract Vault {
     }
 
     function createPaymentToAll() public payable {
-        require(isContractSigned(), "Contract is not signed");
+        require(contractSigned, "Contract is not signed");
         uint256 length = whitelist.length;
         uint256 paymentAmount = 0;
         for(uint256 i = 0; i < length; i++) {
