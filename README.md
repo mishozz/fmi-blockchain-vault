@@ -1,5 +1,51 @@
 # FMI Vault contract
 
+## How to run on local blockchain
+
+**Software Requirments**
+
+**npm** (Node package manager) must be installed
+
+- Install truffle
+
+`npm install -g truffle` 
+
+- Install ganache cli or install Ganache GUI - https://trufflesuite.com/ganache/
+
+`npm install -g ganache-cli`
+
+- Install react
+
+`npm i react`
+
+`npm install react-bootstrap bootstrap@5.1.3`
+
+`react-router-dom`
+
+- Install Metamask in your browser
+
+**How to run**
+- Connect to Ganache
+- In the project folder deploy the smart contract: 
+
+`truffle init`
+
+`truffle migrate`
+
+- Connect your metamask to the local Ganache blockchain.
+
+- Connect an Address from your Ganache to Metamask
+
+- In the `main` folder run
+
+`cd main`
+
+`npm start`
+
+## How to run contract's tests
+
+`truffle test`
+
 ## Overview
 
 XXX can be viewed as smart legal contract which stores and automates payments without the need of third parties. Operating on the Etherium network gives the vault security and transparency. The contract can be used non formally by two parties when they don't trust each other, but also as mentioned above it can be used as a legal settlement.
