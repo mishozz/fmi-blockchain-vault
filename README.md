@@ -102,7 +102,7 @@ Since the contract is immutable after it's in play it must be signed by **All* w
 
 Once signed the contract can't be reverted. So before signing it everything should be clear between the owner and recievers.
 Before signing both parties should carefully calculate exactly how many funds they should lock in order to execute all of their transactions successfully.
-Another con is that someone has to execute the create payment methods. This is leads to some centralization, but solidity does not support scheduling of transaction in the future. The more important factor here is that funds/recievers/owner/numberOfTransactionsLeft are always visible which leads to less corruption.
+Another con is that someone has to execute the create payment methods. This leads to some centralization, but solidity does not support scheduling of transaction. The more important factor here is that funds/recievers/owner/numberOfTransactionsLeft are always visible which leads to less corruption.
 
 ### Smart legal payment schedule
 
@@ -116,7 +116,7 @@ Smart contract won't be useful for legal perposes if they can't be canceled if s
 
 **Workflow in details**
 
-The only difference to the Immutable payments is that the contract can be canceled multisig is signed. Another option is the contract to work with Oracles like Chainlink where real world data can be provided to the contract in order to cancel it. 
+The only difference to the Immutable payments is that the contract can be canceled if multisig is signed. Another option is the contract to work with Oracles like Chainlink where real world data can be provided to the contract in order to cancel it. 
 
 **Security Features**
 
