@@ -83,9 +83,3 @@ Since the contract is immutable after it's in play it must be signed by **All* w
 - Only the owner of the contract can lock value and only the owner can withdraw the locked value to him self.
 - Only whitelisted addresses can recieve funds.
 - Only the owner and the whitelisted addresses can sign the contract
-
-**Cons**
-
-Once signed the contract can't be reverted. So before signing it everything should be clear between the owner and recievers.
-Before signing both parties should carefully calculate exactly how many funds they should lock in order to execute all of their transactions successfully.
-Another con is that someone has to execute the create payment methods. This leads to some centralization, but solidity does not support scheduling of transaction.
