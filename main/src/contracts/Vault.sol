@@ -11,11 +11,11 @@ contract Vault is IVault, Ownable {
     uint256 public override currentAmount;
     address[] public override whitelist;
 
-    mapping(address => Reciever) public recievers;
+    mapping(address => Reciever) public receivers;
     mapping(address => Payment) public paymentDetails;
 
     modifier onlyWhiteListed(address _wallet) {
-        require(recievers[_wallet].isWhiteListed, "Not whitelisted");
+        require(receivers[_wallet].isWhiteListed, "Not whitelisted");
         _;
     }
 
@@ -28,11 +28,12 @@ contract Vault is IVault, Ownable {
 
     function setWhitelistAddresses(address[] memory _whitelist)
         public
+        override
         onlyOwner
     {
         whiteListLength = _whitelist.length;
         for (uint256 i = 0; i < whiteListLength; ++i) {
-            recievers[_whitelist[i]].isWhiteListed = true;
+            receivers[_whitelist[i]].isWhiteListed = true;
         }
 
         whitelist = _whitelist;
@@ -40,24 +41,24 @@ contract Vault is IVault, Ownable {
         emit WhitelistSet(_whitelist);
     }
 
-    function recieverApprove() public onlyWhiteListed(msg.sender) {
-        recievers[msg.sender].hasSigned = true;
+    function receiverApprove() public override onlyWhiteListed(msg.sender) {
+        receivers[msg.sender].hasSigned = true;
         contractSigned = isContractSigned();
     }
 
-    function ownerApprove() public onlyOwner {
+    function ownerApprove() public override onlyOwner {
         hasOwnerSigned = true;
         contractSigned = isContractSigned();
     }
 
-    function isContractSigned() public view returns (bool) {
+    function isContractSigned() public view override returns (bool) {
         if (!hasOwnerSigned) {
             return false;
         }
 
         uint256 length = whitelist.length;
         for (uint256 i = 0; i < length; i++) {
-            if (!recievers[whitelist[i]].hasSigned) {
+            if (!receivers[whitelist[i]].hasSigned) {
                 return false;
             }
         }
@@ -65,13 +66,13 @@ contract Vault is IVault, Ownable {
         return true;
     }
 
-    function deposit() public payable onlyOwner {
+    function deposit() public payable override onlyOwner {
         currentAmount += msg.value;
 
         emit Recieved(msg.sender, msg.value);
     }
 
-    function withdraw() public payable onlyOwner {
+    function withdraw() public payable override onlyOwner {
         require(!contractSigned, "Contract is already signed");
 
         uint256 balanceAmount = address(this).balance;
@@ -84,7 +85,7 @@ contract Vault is IVault, Ownable {
         address _reciever,
         uint256 _amount,
         uint256 _numberOfTransactions
-    ) public onlyWhiteListed(_reciever) {
+    ) public override onlyWhiteListed(_reciever) {
         uint256 minAmount = _amount * _numberOfTransactions;
         require(
             currentAmount >= minAmount,
@@ -99,7 +100,12 @@ contract Vault is IVault, Ownable {
         currentAmount -= minAmount;
     }
 
-    function createPaymentTo(address _reciever) public payable onlySigned {
+    function createPaymentTo(address _reciever)
+        public
+        payable
+        override
+        onlySigned
+    {
         uint256 amountToBeSent = paymentDetails[_reciever].amount;
 
         require(
@@ -118,7 +124,7 @@ contract Vault is IVault, Ownable {
         emit Sent(address(_reciever), amountToBeSent);
     }
 
-    function createPaymentToAll() public payable onlySigned {
+    function createPaymentToAll() public payable override onlySigned {
         uint256 length = whitelist.length;
         uint256 paymentAmount;
 
