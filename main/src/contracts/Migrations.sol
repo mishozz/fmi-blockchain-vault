@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity ^0.8.0;
 
-contract Migrations {
-  address public owner = msg.sender;
-  uint public last_completed_migration;
+import "./interfaces/IMigrations.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-  modifier restricted() {
-    require(
-      msg.sender == owner,
-      "This function is restricted to the contract's owner"
-    );
-    _;
-  }
+contract Migrations is IMigrations, Ownable {
+    uint256 public override last_completed_migration;
 
-  function setCompleted(uint completed) public restricted {
-    last_completed_migration = completed;
-  }
+    constructor() Ownable() {}
+
+    function setCompleted(uint256 completed) public override onlyOwner {
+        last_completed_migration = completed;
+    }
 }
