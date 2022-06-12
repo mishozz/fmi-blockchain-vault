@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {InputGroup, Button, FormControl, Form} from 'react-bootstrap'
+import Spinner from 'react-bootstrap/Spinner'
 
 
 class Payment extends Component {
@@ -21,26 +22,24 @@ class Payment extends Component {
         return "Vault Balance is " + window.web3.utils.fromWei(this.props.vaultBalance, 'Ether') + " ETH"
     }
 
-    createPaymentTo = (reciever) => {
+    createPaymentTo = async (reciever) => {
         const web3 = window.web3
         this.setState({ loading: true })
-        this.props.vault.methods.createPaymentTo(reciever)
+        await this.props.vault.methods.createPaymentTo(reciever)
             .send({from: this.props.account})
             .on('transactionHash', async () => {
                 await new Promise(r => setTimeout(r, 200));
-                this.setState({ loading: false })
         })
         this.setState({ loading: false })
     }
 
-    createPaymentToAll = () => {
+    createPaymentToAll = async () => {
         const web3 = window.web3
         this.setState({ loading: true })
-        this.props.vault.methods.createPaymentToAll()
+        await this.props.vault.methods.createPaymentToAll()
             .send({from: this.props.account})
             .on('transactionHash', async () => {
                 await new Promise(r => setTimeout(r, 200));
-                this.setState({ loading: false })
         })
         this.setState({ loading: false })
     }
@@ -52,7 +51,11 @@ class Payment extends Component {
 
         let content
         if(this.state.loading) {
-        content = <p id="loader" className="text-center">Loading...</p>
+        content = <div> <p id="loader" className="text-center">Loading...</p>
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </div>
         } else {
         content = <div>
             <h1>Create Payments</h1>
