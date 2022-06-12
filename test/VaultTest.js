@@ -1,11 +1,12 @@
 const chai = require('chai');
 const hre = require('hardhat');
+const utils = require('../utils/constants');
 
 const { expect } = chai;
 const ethers = hre.ethers
 
 describe('Vault', () => {
-    let vault, signers, owner, receiver, receiver2
+    let vault, signers, owner, receiver, receiver2, weth
 
     before(async () => {
         await hre.run("compile");
@@ -14,34 +15,36 @@ describe('Vault', () => {
         owner = signers[0]
         receiver = signers[1]
         receiver2 = signers[2]
+
+        weth = await ethers.getContractAt("IWETH", utils.ethAddress)
     })
 
     beforeEach('setup contract for each test', async function () {
-        const VaultContract = await ethers.getContractFactory("Vault");
-        vault = await VaultContract.deploy();
+        const VaultContract = await ethers.getContractFactory("VaultETH");
+        vault = await VaultContract.deploy(utils.ethAddress);
     })
 
-    it('has an owner', async function () {
+    it('Should have an owner', async function () {
         const vaultOwner = await vault.owner()
         expect(vaultOwner).to.equal(owner.address)
     })
 
     describe('deposit()', async () => {
-        it('deposit success', async () => {
+        it('Should deposit successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
-            const balance = await ethers.provider.getBalance(vault.address)
+            const balance = await weth.balanceOf(vault.address)
             const currentAmount = await vault.currentAmount()
             expect(balance).to.equal(ethers.utils.parseEther('0.1'))
             expect(currentAmount).to.equal(ethers.utils.parseEther('0.1'))
         })
 
-        it('deposit fail: allowed only to owner', async () => {
-            await expect(vault.connect(receiver).deposit({ value: ethers.utils.parseEther('0.1') })).to.be.reverted
+        it('Should revert on deposit when allowed only to owner', async () => {
+            await expect(vault.connect(receiver).deposit({ value: ethers.utils.parseEther('0.1') })).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
 
     describe('withdraw()', async () => {
-        it('withdraw success', async () => {
+        it('Should withdraw successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.withdraw()
 
@@ -50,17 +53,17 @@ describe('Vault', () => {
 
             expect(balance).to.equal(ethers.utils.parseEther('0'))
         })
-        it('withdraw fail: allowed only to owner', async () => {
-            await expect(vault.connect(receiver).withdraw()).to.be.reverted
+        it('Should revert on withdraw when allowed only to owner', async () => {
+            await expect(vault.connect(receiver).withdraw()).to.be.revertedWith('Ownable: caller is not the owner')
         })
-        it('withdraw fail: contract is signed', async () => {
+        it('Should revert on withdraw when contract is signed', async () => {
             await vault.ownerApprove()
-            await expect(vault.withdraw()).to.be.reverted
+            await expect(vault.withdraw()).to.be.revertedWith('V_ALREADY_SIGNED')
         })
     })
 
     describe('ownerApprove()', async () => {
-        it('ownerAapprove success', async () => {
+        it('Should owner approve successfully', async () => {
             await vault.ownerApprove()
             const hasSigned = await vault.hasOwnerSigned()
             expect(hasSigned).to.equal(true)
@@ -68,7 +71,7 @@ describe('Vault', () => {
     })
 
     describe('receiverApprove()', async () => {
-        it('receiverApprove success', async () => {
+        it('Should receiver approve successfully', async () => {
             await vault.setWhitelistAddresses([receiver.address])
             await vault.connect(receiver).receiverApprove()
 
@@ -78,7 +81,7 @@ describe('Vault', () => {
     })
 
     describe('setWhitelistAddresses()', async () => {
-        it('setWhitelistAddresses success', async () => {
+        it('Should set whitelist addresses successfully', async () => {
             await vault.setWhitelistAddresses([receiver.address])
             const whitelistedAddress = await vault.whitelist(0)
             const whitelistedReceiver = await vault.receivers(receiver.address)
@@ -88,7 +91,7 @@ describe('Vault', () => {
     })
 
     describe('isContractSigned()', async () => {
-        it('isContractSigned returns true: both parties signed', async () => {
+        it('Should sign contract', async () => {
             await vault.setWhitelistAddresses([receiver.address])
             await vault.connect(receiver).receiverApprove()
             await vault.ownerApprove()
@@ -97,7 +100,7 @@ describe('Vault', () => {
             expect(isSigned).to.equal(true)
         })
 
-        it('isContractSigned returns false: only owner signed', async () => {
+        it('Should sign contract by owner only', async () => {
             await vault.setWhitelistAddresses([receiver.address])
             await vault.ownerApprove()
 
@@ -105,7 +108,7 @@ describe('Vault', () => {
             expect(isSigned).to.equal(false)
         })
 
-        it('isContractSigned returns false: only receiver signed', async () => {
+        it('Should sign contract by receiver only', async () => {
             await vault.setWhitelistAddresses([receiver.address])
             await vault.connect(receiver).receiverApprove()
 
@@ -113,14 +116,14 @@ describe('Vault', () => {
             expect(isSigned).to.equal(false)
         })
 
-        it('isContractSigned returns false: no one signed', async () => {
+        it('Should not sign contract', async () => {
             let isSigned = await vault.isContractSigned()
             expect(isSigned).to.equal(false)
         })
     })
 
     describe('setPaymentDetails()', async () => {
-        it('setPaymentDetails success', async () => {
+        it('Should set payment details successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address])
             await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 3)
@@ -130,16 +133,16 @@ describe('Vault', () => {
             expect(paymentDetails.amount).to.equal(ethers.utils.parseEther('0.01'))
         })
 
-        it('setPaymentDetails fail: not enough value locked', async () => {
+        it('Should revert on set payment details when not enough value locked', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address])
 
-            await expect(vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 11)).to.be.revertedWith('Not enough funds locked in the vault')
+            await expect(vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 11)).to.be.revertedWith('V_NOT_ENOUGH_FUNDS_LOCKED')
         })
     })
 
     describe('createPaymentTo()', async () => {
-        it('createPaymentTo success', async () => {
+        it('Should create payment to successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address])
             await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 3)
@@ -148,23 +151,23 @@ describe('Vault', () => {
             await vault.createPaymentTo(receiver.address)
 
             const paymentDetails = await vault.paymentDetails(receiver.address)
-            const balance = await ethers.provider.getBalance(vault.address)
+            const balance = await weth.balanceOf(vault.address)
 
             expect(paymentDetails.numberOfTransactions.toNumber()).to.equal(2)
             expect(balance).to.equal(ethers.utils.parseEther('0.09'))
         })
 
-        it('createPaymentTo fail: contract not signed', async () => {
+        it('Should revert on create payment to when contract not signed', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.015') })
             await vault.setWhitelistAddresses([receiver.address])
             await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 1)
 
-            await expect(vault.createPaymentTo(receiver.address)).to.be.revertedWith('Contract is not signed')
+            await expect(vault.createPaymentTo(receiver.address)).to.be.revertedWith('V_NOT_SIGNED')
         })
     })
 
     describe('createPaymentToAll()', async () => {
-        it('createPaymentToAll success', async () => {
+        it('Should create payment to all successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address, receiver2.address])
             await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 3)
@@ -175,18 +178,18 @@ describe('Vault', () => {
             await vault.createPaymentToAll()
 
             let paymentDetails = await vault.paymentDetails(receiver.address)
-            const balance = await ethers.provider.getBalance(vault.address)
+            const balance = await weth.balanceOf(vault.address)
 
             expect(paymentDetails.numberOfTransactions.toNumber()).to.equal(2)
             expect(balance.toString()).to.equal(ethers.utils.parseEther('0.08'))
         })
 
-        it('createPaymentToAll fail: contract not signed', async () => {
+        it('Should revert on create payment to all when contract not signed', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.015') })
             await vault.setWhitelistAddresses([receiver.address])
             await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 1)
 
-            await expect(vault.createPaymentToAll()).to.be.revertedWith('Contract is not signed')
+            await expect(vault.createPaymentToAll()).to.be.revertedWith('V_NOT_SIGNED')
         })
     })
 })

@@ -9,13 +9,13 @@ class Payment extends Component {
     constructor(props) {
         super(props)
         this.state = {
-          loading: true
+            loading: true
         }
     }
 
     async componentDidMount() {
         await new Promise(r => setTimeout(r, 200));
-        this.setState({loading: false})
+        this.setState({ loading: false })
     }
 
     getVaultBalance = () => {
@@ -57,32 +57,32 @@ class Payment extends Component {
             </Spinner>
         </div>
         } else {
-        content = <div>
-            <h1>Create Payments</h1>
-            <h2 id="vaultBalance-h2">{this.getVaultBalance()}</h2>
-            <form onSubmit={(event) => {
-                event.preventDefault();
-                let reciever = this.reciever.value.toString()
-                this.createPaymentTo(reciever)
-            }}>
-                <InputGroup className="mb-3" >
-                    <Button variant="outline-secondary" type="submit">Create Payment</Button>
-                    <Form.Select 
-                        ref={(input) => this.reciever = input}
-                        size="lg">
-                        {whitelist}
-                    </Form.Select>
-                </InputGroup>
-            </form>
-            <h2>Create Payment to All</h2>
-            <Button variant="outline-secondary" onClick={this.createPaymentToAll} >Create Payment</Button>
-        </div>
+            content = <div>
+                <h1>Create Payments</h1>
+                <h2 id="vaultBalance-h2">{this.getVaultBalance()}</h2>
+                <form onSubmit={(event) => {
+                    event.preventDefault();
+                    let receiver = this.receiver.value.toString()
+                    this.createPaymentTo(receiver)
+                }}>
+                    <InputGroup className="mb-3" >
+                        <Button variant="outline-secondary" type="submit">Create Payment</Button>
+                        <Form.Select
+                            ref={(input) => this.receiver = input}
+                            size="lg">
+                            {whitelist}
+                        </Form.Select>
+                    </InputGroup>
+                </form>
+                <h2>Create Payment to All</h2>
+                <Button variant="outline-secondary" onClick={this.createPaymentToAll} >Create Payment</Button>
+            </div>
         }
         return (
-        <div className="central-wrapper">
-            {content}
-        </div>
-    );
-  }
+            <div className="central-wrapper">
+                {content}
+            </div>
+        );
+    }
 }
 export default Payment;

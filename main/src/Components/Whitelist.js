@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {InputGroup, Button, FormControl} from 'react-bootstrap'
-import IWETH from '../abis/IWETH.json'
 import Spinner from 'react-bootstrap/Spinner'
 
 const ETH_ADDRESS = "0x0a180A76e4466bF68A7F86fB029BEd3cCcFaAac5"

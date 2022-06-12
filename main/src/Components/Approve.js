@@ -61,7 +61,7 @@ class Approve extends Component {
             content = <div>
                 <h1>Contract signed: {this.state.contractSigned.toString()} </h1>
                 <br></br>
-                <h2>Reciever approve</h2>
+                <h2>receiver approve</h2>
                 <Button variant="outline-secondary" onClick={this.receiverApprove}>Approve</Button>
                 <h2>Owner approve</h2>
                 <Button variant="outline-secondary" onClick={this.ownerApprove}>Approve</Button>
