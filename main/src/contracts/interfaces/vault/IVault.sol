@@ -48,5 +48,5 @@ interface IVault {
 
     function createPaymentToAll() external;
 
-    function withdraw(uint256 amount) external;
+    function withdraw() external;
 }

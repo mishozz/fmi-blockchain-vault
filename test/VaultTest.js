@@ -46,7 +46,7 @@ describe('Vault', () => {
     describe('withdraw()', async () => {
         it('Should withdraw successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
-            await vault.withdraw(ethers.utils.parseEther('1'))
+            await vault.withdraw()
 
             const vaultAddress = await vault.address
             const balance = await ethers.provider.getBalance(vaultAddress)
@@ -54,11 +54,11 @@ describe('Vault', () => {
             expect(balance).to.equal(ethers.utils.parseEther('0'))
         })
         it('Should revert on withdraw when allowed only to owner', async () => {
-            await expect(vault.connect(receiver).withdraw(ethers.utils.parseEther('0.1'))).to.be.revertedWith('Ownable: caller is not the owner')
+            await expect(vault.connect(receiver).withdraw()).to.be.revertedWith('Ownable: caller is not the owner')
         })
         it('Should revert on withdraw when contract is signed', async () => {
             await vault.ownerApprove()
-            await expect(vault.withdraw(ethers.utils.parseEther('0.1'))).to.be.revertedWith('V_ALREADY_SIGNED')
+            await expect(vault.withdraw()).to.be.revertedWith('V_ALREADY_SIGNED')
         })
     })
 

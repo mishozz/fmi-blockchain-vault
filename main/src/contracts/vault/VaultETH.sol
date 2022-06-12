@@ -10,6 +10,8 @@ contract VaultETH is VaultCore, IVaultETH {
 
     receive() external payable {}
 
+    fallback() external payable {}
+
     function deposit() public payable override onlyOwner {
         _preDeposit(msg.value);
         currentAmount += msg.value;
@@ -17,20 +19,12 @@ contract VaultETH is VaultCore, IVaultETH {
         emit Recieved(msg.sender, msg.value);
     }
 
-    function withdraw(uint256 amount)
-        public
-        override
-        onlySigned(false)
-        onlyOwner
-    {
-        uint256 currentBalance = address(this).balance;
-        if (amount > currentBalance) {
-            amount = currentBalance;
-        }
+    function withdraw() public override onlySigned(false) onlyOwner {
+        uint256 currentBalance = IWETH(asset).balanceOf(address(this));
 
-        _postWithdraw(amount, owner());
+        _postWithdraw(currentBalance, owner());
 
-        emit Withdrawn(amount);
+        emit Withdrawn(currentBalance);
     }
 
     function createPaymentTo(address _receiver)

@@ -18,7 +18,7 @@ contract VaultFactory is IVaultFactory {
     {
         bytes memory bytecode = abi.encodePacked(
             deploymentBytecode,
-            abi.encode(msg.sender, asset)
+            abi.encode(asset)
         );
 
         assembly {

@@ -47,6 +47,15 @@ describe('Vault', () => {
 
         const vaults = await registry.getVaultsPerAsset(utils.daiAddress)
         expect(vaults.length).to.be.equal(1)
+    })
 
+    it('Should deploy ETH vault', async function () {
+        await registry.createVaultETH();
+
+        const vaults = await registry.getVaultsPerAsset(utils.ethAddress)
+
+        const vault = await ethers.getContractAt("VaultETH", vaults[0])
+
+        await vault.deposit({ value: ethers.utils.parseEther('0.1') })
     })
 })

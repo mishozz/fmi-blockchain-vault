@@ -15,20 +15,12 @@ contract VaultERC20 is VaultCore, IVaultERC20 {
         emit Recieved(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount)
-        public
-        override
-        onlySigned(false)
-        onlyOwner
-    {
+    function withdraw() public override onlySigned(false) onlyOwner {
         uint256 currentBalance = IERC20(asset).balanceOf(address(this));
-        if (amount > currentBalance) {
-            amount = currentBalance;
-        }
 
-        IERC20(asset).transfer(owner(), amount);
+        IERC20(asset).transfer(owner(), currentBalance);
 
-        emit Withdrawn(amount);
+        emit Withdrawn(currentBalance);
     }
 
     function createPaymentTo(address _receiver)

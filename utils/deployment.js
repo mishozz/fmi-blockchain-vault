@@ -17,7 +17,7 @@ async function main() {
 
     const vaultFactory = await VaultFactory.deploy(vaultERC20.bytecode);
     const vaultFactoryETH = await VaultFactory.deploy(vaultETH.bytecode);
-    const vaultRegistry = await VaultRegistry.deploy(vaultFactory.address, vaultFactoryETH.address, utils.ethAddress);
+    const vaultRegistry = await VaultRegistry.deploy(vaultFactory.address, vaultFactoryETH.address, '0x0a180A76e4466bF68A7F86fB029BEd3cCcFaAac5');
 
     console.log("factory address:", vaultFactory.address);
     console.log("factory ETH address:", vaultFactoryETH.address);
