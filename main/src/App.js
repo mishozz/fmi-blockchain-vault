@@ -63,11 +63,12 @@ class App extends Component {
       const vaultBalance = await weth.methods.balanceOf(address).call()
       this.setState({vaultBalance: vaultBalance})
       this.setState({vaultAddress: address})
+      this.loadWhitelist(vault);
   }
 
   async loadWhitelist(vault, length) {
     let whitelist = [];
-    for(let i = 0; i < length; i++) {
+    for(let i = 0; i < 1; i++) {
       const address = await vault.methods.whitelist(i).call()
       whitelist.push(address)
     }
@@ -119,7 +120,7 @@ class App extends Component {
                     <Route exact path="/withdraw" element={<Withdraw vaultAddress={this.state.vaultAddress} updateBalances={this.updateBalances} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
                     <Route exact path="/whitelist" element={<Whitelist updateWhitelist={this.updateWhitelist} whitelist={this.state.whitelist} vault={this.state.vault} account={this.state.account}/>}/>
                     <Route exact path="/details" element={<PaymentDetails whitelist={this.state.whitelist} vaultAddress={this.state.vaultAddress} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
-                    <Route exact path="/payment" element={<Payment whitelist={this.state.whitelist} vaultAddress={this.state.vaultAddress} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
+                    <Route exact path="/payment" element={<Payment whitelist={this.state.whitelist} updateBalances={this.updateBalances} vaultAddress={this.state.vaultAddress} balance={this.state.balance} vaultBalance={this.state.vaultBalance} vault={this.state.vault} account={this.state.account}/>}/>
                     <Route exact path="/approve" element={<Approve vaultAddress={this.state.vaultAddress} balance={this.state.balance} vault={this.state.vault} account={this.state.account}/>}/>
                   </Routes>
               </Router>

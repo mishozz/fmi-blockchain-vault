@@ -22,7 +22,7 @@ const Vaults = ({setVaultList, vaultRegistry, account}) => {
   
     return (
       <div>
-          <h2>Search for vaults</h2>
+          <h2>Search for escrows</h2>
         <input
           type="text"
           id="address"
@@ -32,7 +32,7 @@ const Vaults = ({setVaultList, vaultRegistry, account}) => {
           autoComplete="off"
         />
   
-        <button onClick={handleClick}>Get Vaults </button>
+        <button onClick={handleClick}>Get Escrows</button>
       </div>
     );
 }

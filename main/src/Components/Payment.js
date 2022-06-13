@@ -1,7 +1,10 @@
 import { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {InputGroup, Button, FormControl, Form} from 'react-bootstrap'
+import IWETH from '../abis/IWETH.json'
 import Spinner from 'react-bootstrap/Spinner'
+
+const ETH_ADDRESS = "0x0a180A76e4466bF68A7F86fB029BEd3cCcFaAac5"
 
 
 class Payment extends Component {
@@ -31,6 +34,10 @@ class Payment extends Component {
                 await new Promise(r => setTimeout(r, 200));
         })
         this.setState({ loading: false })
+        let ethBalance = await web3.eth.getBalance(this.props.account)
+        const weth = new web3.eth.Contract(IWETH.abi, ETH_ADDRESS)
+        const vaultBalance = await weth.methods.balanceOf(this.props.vaultAddress).call();
+        this.props.updateBalances(ethBalance, vaultBalance)
     }
 
     createPaymentToAll = async () => {
@@ -42,6 +49,10 @@ class Payment extends Component {
                 await new Promise(r => setTimeout(r, 200));
         })
         this.setState({ loading: false })
+        let ethBalance = await web3.eth.getBalance(this.props.account)
+        const weth = new web3.eth.Contract(IWETH.abi, ETH_ADDRESS)
+        const vaultBalance = await weth.methods.balanceOf(this.props.vaultAddress).call();
+        this.props.updateBalances(ethBalance, vaultBalance)
     }
 
     render() {
