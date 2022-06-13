@@ -46,11 +46,9 @@ describe('Vault', () => {
     describe('withdraw()', async () => {
         it('Should withdraw successfully', async () => {
             await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
-            await vault.withdraw()
+            await vault.connect(owner).withdraw()
 
-            const vaultAddress = await vault.address
-            const balance = await ethers.provider.getBalance(vaultAddress)
-
+            const balance = await weth.balanceOf(vault.address)
             expect(balance).to.equal(ethers.utils.parseEther('0'))
         })
         it('Should revert on withdraw when allowed only to owner', async () => {
