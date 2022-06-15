@@ -22,7 +22,7 @@ contract VaultETH is VaultCore, IVaultETH {
     function withdraw() public override onlySigned(false) onlyOwner {
         uint256 currentBalance = IWETH(asset).balanceOf(address(this));
 
-        _postWithdraw(currentBalance, msg.sender);
+        _postWithdraw(currentBalance, owner());
 
         emit Withdrawn(currentBalance);
     }

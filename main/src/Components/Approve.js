@@ -19,30 +19,32 @@ class Approve extends Component {
         await this.isContractSigned()
     }
 
-    receiverApprove = () => {
+    receiverApprove = async () => {
         const web3 = window.web3
         this.setState({ loading: true })
-        this.props.vault.methods.receiverApprove()
+        await this.props.vault.methods.receiverApprove()
             .send({ from: this.props.account })
             .on('transactionHash', async () => {
                 await this.isContractSigned()
                 await new Promise(r => setTimeout(r, 200))
-                this.setState({ loading: false })
             })
         this.setState({ loading: false })
+        const isContractSigned = await this.props.vault.methods.contractSigned.call().call()
+        this.setState({ contractSigned: isContractSigned })
     }
 
-    ownerApprove = () => {
+    ownerApprove = async () => {
         const web3 = window.web3
         this.setState({ loading: true })
-        this.props.vault.methods.ownerApprove()
+        await this.props.vault.methods.ownerApprove()
             .send({ from: this.props.account })
             .on('transactionHash', async () => {
                 await this.isContractSigned()
                 await new Promise(r => setTimeout(r, 200))
-                this.setState({ loading: false })
             })
         this.setState({ loading: false })
+        const isContractSigned = await this.props.vault.methods.contractSigned.call().call()
+        this.setState({ contractSigned: isContractSigned })
     }
 
     isContractSigned = async () => {

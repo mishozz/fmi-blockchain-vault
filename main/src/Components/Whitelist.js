@@ -1,7 +1,9 @@
 import { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { InputGroup, Button, FormControl } from 'react-bootstrap'
+import Spinner from 'react-bootstrap/Spinner'
 
+const ETH_ADDRESS = "0x0a180A76e4466bF68A7F86fB029BEd3cCcFaAac5"
 
 class Whitelist extends Component {
 
@@ -20,13 +22,13 @@ class Whitelist extends Component {
     setWhitelistAddresses = async (whitelist) => {
         const web3 = window.web3
         this.setState({ loading: true })
-        this.props.vault.methods.setWhitelistAddresses(whitelist)
+        await this.props.vault.methods.setWhitelistAddresses(whitelist)
             .send({ from: this.props.account })
             .on('transactionHash', async (hash) => {
                 await new Promise(r => setTimeout(r, 200));
-                this.setState({ loading: false })
-                this.props.updateWhitelist(whitelist)
             })
+        this.setState({ loading: false })
+        this.props.updateWhitelist(whitelist)
     }
 
     render() {
@@ -36,7 +38,11 @@ class Whitelist extends Component {
 
         let content
         if (this.state.loading) {
-            content = <p id="loader" className="text-center">Loading...</p>
+            content = <div> <p id="loader" className="text-center">Loading...</p>
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            </div>
         } else {
             content = <div>
                 <h1>Set receiver's addresses</h1>
