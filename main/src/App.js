@@ -18,7 +18,7 @@ import LoadVault from './Components/LoadVault'
 import Registry from './abis/Registry.json'
 import IWETH from './abis/IWETH.json'
 
-const REGISTRY_ADDRESS = "0x2Cf410f2CBD7305490c90BF334260664b50038B4"
+const REGISTRY_ADDRESS = "0x41A8a43504447fa6b13bc261090e86190a8838f4"
 const ETH_ADDRESS = "0x0a180A76e4466bF68A7F86fB029BEd3cCcFaAac5"
 class App extends Component {
   constructor(props) {

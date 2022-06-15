@@ -8,7 +8,7 @@
 
 ### VaultRegistry.sol
 
-- Adress: 0x2Cf410f2CBD7305490c90BF334260664b50038B4
+- Adress: 0x41A8a43504447fa6b13bc261090e86190a8838f4
 https://ropsten.etherscan.io/address/0x2Cf410f2CBD7305490c90BF334260664b50038B4
 - ABI: https://github.com/mishozz/fmi-blockchain-vault/blob/main/main/src/abis/Registry.json
 
@@ -34,10 +34,13 @@ Escrow Service is smart contract which stores and automates payments without the
 It ensures that the terms of the transaction agreed upon by both the Owner and Receiver are satisfied.
 The parties involved in the transaction need to ensure that both the agreed product/service is delivered and payment is made. One party should not be able to default the transaction at the expense of the other party.
 
-### Workflow
+## Escrow Registry Workflow
 
-![alt text](./diagram.png)
+![alt text](./escrow-registry.png)
 
+## Escrow Service Workflow
+
+![alt text](./escrow-service.png)
 ## Contract's Details
 
 ## VaultCore / VaultERC20 / VaultETH
