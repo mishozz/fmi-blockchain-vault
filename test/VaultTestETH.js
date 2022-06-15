@@ -1,13 +1,12 @@
 const chai = require('chai');
 const hre = require('hardhat');
 const utils = require('../utils/constants');
-const uniswapRouterABI = require("../main/src/abis/Uniswap.json");
 
 const { expect } = chai;
 const ethers = hre.ethers
 
 describe('Vault', () => {
-    let vault, signers, owner, receiver, receiver2, dai, uniswapRouter
+    let vault, signers, owner, receiver, receiver2, weth
 
     before(async () => {
         await hre.run("compile");
@@ -17,36 +16,13 @@ describe('Vault', () => {
         receiver = signers[1]
         receiver2 = signers[2]
 
-        dai = await ethers.getContractAt("IERC20", utils.daiAddress)
-        uniswapRouter = await ethers.getContractAt(
-            uniswapRouterABI,
-            utils.UniswapV2Router02Address
-        );
+        weth = await ethers.getContractAt("IWETH", utils.ethAddress)
     })
 
     beforeEach('setup contract for each test', async function () {
-        const VaultContract = await ethers.getContractFactory("VaultERC20");
-        vault = await VaultContract.deploy(utils.daiAddress);
+        const VaultContract = await ethers.getContractFactory("VaultETH");
+        vault = await VaultContract.deploy(utils.ethAddress);
     })
-
-    const claimToken = async (
-        signer,
-        tokenAddress,
-        tokenAmount = ethers.BigNumber.from("1")
-    ) => {
-        const deadline = (new Date(Date.now()).getTime() / 1000).toFixed(0) + 60 * 20;
-
-        const uniTx = await uniswapRouter
-            .connect(signer)
-            .swapETHForExactTokens(
-                tokenAmount,
-                [utils.ethAddress, tokenAddress],
-                signer.address,
-                deadline,
-                { value: "1000000000000000000000" }
-            );
-        await uniTx.wait();
-    };
 
     it('Should have an owner', async function () {
         const vaultOwner = await vault.owner()
@@ -55,35 +31,26 @@ describe('Vault', () => {
 
     describe('deposit()', async () => {
         it('Should deposit successfully', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.approve(vault.address, ethers.utils.parseEther('100'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('100'))
-            const balance = await dai.balanceOf(vault.address)
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
+            const balance = await weth.balanceOf(vault.address)
             const currentAmount = await vault.currentAmount()
-            expect(balance).to.equal(ethers.utils.parseEther('100'))
-            expect(currentAmount).to.equal(ethers.utils.parseEther('100'))
+            expect(balance).to.equal(ethers.utils.parseEther('0.1'))
+            expect(currentAmount).to.equal(ethers.utils.parseEther('0.1'))
         })
 
         it('Should revert on deposit when allowed only to owner', async () => {
-            await claimToken(receiver, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.connect(receiver).approve(vault.address, ethers.utils.parseEther('100'));
-
-            await expect(vault.connect(receiver).deposit(ethers.utils.parseEther('100'))).to.be.revertedWith('Ownable: caller is not the owner')
+            await expect(vault.connect(receiver).deposit({ value: ethers.utils.parseEther('0.1') })).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
 
     describe('withdraw()', async () => {
         it('Should withdraw successfully', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.approve(vault.address, ethers.utils.parseEther('100'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('100'))
-            const balanceBefore = await dai.balanceOf(owner.address)
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
+            const balanceBefore = await ethers.provider.getBalance(owner.address)
             await vault.connect(owner).withdraw()
-            const balanceAfter = await dai.balanceOf(owner.address)
+            const balanceAfter = await ethers.provider.getBalance(owner.address)
 
-            const balance = await dai.balanceOf(vault.address)
+            const balance = await weth.balanceOf(vault.address)
             expect(balance).to.equal(ethers.utils.parseEther('0'))
             const eval = balanceBefore.lt(balanceAfter)
             expect(eval).to.be.true
@@ -159,55 +126,43 @@ describe('Vault', () => {
 
     describe('setPaymentDetails()', async () => {
         it('Should set payment details successfully', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.approve(vault.address, ethers.utils.parseEther('100'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('100'))
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address])
-            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('10'), 3)
+            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 3)
 
             let paymentDetails = await vault.paymentDetails(receiver.address)
             expect(paymentDetails.numberOfTransactions.toNumber()).to.equal(3)
-            expect(paymentDetails.amount).to.equal(ethers.utils.parseEther('10'))
+            expect(paymentDetails.amount).to.equal(ethers.utils.parseEther('0.01'))
         })
 
         it('Should revert on set payment details when not enough value locked', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.approve(vault.address, ethers.utils.parseEther('100'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('100'))
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address])
 
-            await expect(vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('10'), 11)).to.be.revertedWith('V_NOT_ENOUGH_FUNDS_LOCKED')
+            await expect(vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 11)).to.be.revertedWith('V_NOT_ENOUGH_FUNDS_LOCKED')
         })
     })
 
     describe('createPaymentTo()', async () => {
         it('Should create payment to successfully', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.approve(vault.address, ethers.utils.parseEther('100'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('100'))
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address])
-            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('10'), 3)
+            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 3)
             await vault.connect(receiver).receiverApprove()
             await vault.ownerApprove()
             await vault.createPaymentTo(receiver.address)
 
             const paymentDetails = await vault.paymentDetails(receiver.address)
-            const balance = await dai.balanceOf(vault.address)
+            const balance = await weth.balanceOf(vault.address)
 
             expect(paymentDetails.numberOfTransactions.toNumber()).to.equal(2)
-            expect(balance).to.equal(ethers.utils.parseEther('90'))
+            expect(balance).to.equal(ethers.utils.parseEther('0.09'))
         })
 
         it('Should revert on create payment to when contract not signed', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('15'));
-            await dai.approve(vault.address, ethers.utils.parseEther('15'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('15'))
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.015') })
             await vault.setWhitelistAddresses([receiver.address])
-            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('10'), 1)
+            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 1)
 
             await expect(vault.createPaymentTo(receiver.address)).to.be.revertedWith('V_NOT_SIGNED')
         })
@@ -215,32 +170,26 @@ describe('Vault', () => {
 
     describe('createPaymentToAll()', async () => {
         it('Should create payment to all successfully', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('100'));
-            await dai.approve(vault.address, ethers.utils.parseEther('100'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('100'))
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.1') })
             await vault.setWhitelistAddresses([receiver.address, receiver2.address])
-            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('10'), 3)
-            await vault.setPaymentDetails(receiver2.address, ethers.utils.parseEther('10'), 3)
+            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 3)
+            await vault.setPaymentDetails(receiver2.address, ethers.utils.parseEther('0.01'), 3)
             await vault.connect(receiver).receiverApprove()
             await vault.connect(receiver2).receiverApprove()
             await vault.ownerApprove()
             await vault.createPaymentToAll()
 
             let paymentDetails = await vault.paymentDetails(receiver.address)
-            const balance = await dai.balanceOf(vault.address)
+            const balance = await weth.balanceOf(vault.address)
 
             expect(paymentDetails.numberOfTransactions.toNumber()).to.equal(2)
-            expect(balance.toString()).to.equal(ethers.utils.parseEther('80'))
+            expect(balance.toString()).to.equal(ethers.utils.parseEther('0.08'))
         })
 
         it('Should revert on create payment to all when contract not signed', async () => {
-            await claimToken(owner, utils.daiAddress, ethers.utils.parseEther('15'));
-            await dai.approve(vault.address, ethers.utils.parseEther('15'));
-
-            await vault.connect(owner).deposit(ethers.utils.parseEther('15'))
+            await vault.connect(owner).deposit({ value: ethers.utils.parseEther('0.015') })
             await vault.setWhitelistAddresses([receiver.address])
-            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('10'), 1)
+            await vault.setPaymentDetails(receiver.address, ethers.utils.parseEther('0.01'), 1)
 
             await expect(vault.createPaymentToAll()).to.be.revertedWith('V_NOT_SIGNED')
         })

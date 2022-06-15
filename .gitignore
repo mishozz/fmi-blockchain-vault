@@ -6,6 +6,8 @@ node_modules
 .pnp.js
 
 .env
+artifacts
+cache
 
 # testing
 coverage
